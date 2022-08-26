@@ -1,0 +1,57 @@
+{% extends '/template/base.twig' %}
+
+{% block body %}
+    {% include '/template/header.twig' %}
+
+    <div class="content">
+        
+        <form method="post">
+            <input type="text" id="new_game" name="name_game" placeholder="New game" />
+            <input type="button" name="new_game" onclick="createGame()" value="Add" />
+        </form>
+
+        <div class="list">
+            <ul>
+                {% for game in games %}
+                    <li><input {% if game.game_finished == 1 %} checked {% endif %} onclick="updateGame(event,{{ game.game_id }})" type="checkbox" class="updateGame {% if game.game_finished == 1 %} finished {% endif %}" value="1" />{{ game.game_name }} <button onclick="deleteGame({{ game.game_id }})">cross</button></li>
+                {% endfor %}
+            </ul>
+        </div>
+
+    </div>
+
+    <script>
+        // Need to add real time element
+
+        function createGame() {
+            const xhttp = new XMLHttpRequest();
+            xhttp.open("POST", "/create");
+            xhttp.setRequestHeader("Content-Type", "application/json");
+            let data = {
+                name: document.getElementById('new_game').value
+            }
+            xhttp.send(JSON.stringify(data));
+        }
+
+        function updateGame(event,id) {
+            const xhttp = new XMLHttpRequest();
+            xhttp.open("POST", "/update");
+            let data = {
+                id: id,
+                value: event.target.checked == true ? 1 : 0
+            }
+            xhttp.setRequestHeader("Content-Type", "application/json");
+            xhttp.send(JSON.stringify(data));
+        }
+
+        function deleteGame(id) {
+            const xhttp = new XMLHttpRequest();
+            xhttp.open("DELETE", "/delete");
+            xhttp.setRequestHeader("Content-Type", "application/json");
+            let data = {
+                id: id
+            }
+            xhttp.send(JSON.stringify(data));
+        }
+    </script>
+{% endblock %}

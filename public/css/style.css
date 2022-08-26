@@ -1,0 +1,129 @@
+@media only screen and (min-device-width: 768px) and (max-device-width: 1024px) and (orientation: landscape) {}
+
+@media only screen and (min-device-width: 768px) and (max-device-width: 1024px) and (orientation: portrait) {}
+
+.content {
+    width: 60%;
+    margin: auto;
+}
+
+.header {
+    background-color: orange;
+    margin-bottom: 20px;
+}
+
+.logo {
+    width: 75px;
+}
+
+.img-produit {
+    text-align: center;
+}
+
+.produit-img {
+    width: 75px;
+}
+
+.add {
+    margin: 10px;
+    align-items: baseline;
+}
+
+.button-form .btn {
+    margin: 10px;
+}
+
+a {
+    color: black;
+}
+
+.commandes {
+    margin: 10px;
+}
+
+.client-infos>div {
+    margin: 10px;
+}
+
+.select {
+    color: red;
+}
+
+.page-link {
+    cursor: pointer;
+}
+
+.tableau-historique {
+    margin: 20px;
+}
+
+.tableau-historique table tbody tr {
+    cursor: pointer;
+}
+
+.tableau-historique table tbody tr:hover {
+    background-color: #aaa;
+}
+
+.nav-link {
+    color: black;
+}
+
+.button-head {
+    margin: 15px 0 15px 0;
+    padding: 15px 0 15px 0;
+    border-bottom: 2px solid rgb(245, 169, 131);
+}
+
+.flex {
+    display: flex;
+    justify-content: space-between;
+}
+
+.button-close {
+    font-size: 2em;
+}
+
+.far {
+    cursor: pointer;
+}
+
+.infos-commande {
+    margin-bottom: 20px;
+}
+
+#forlm {
+    margin-bottom: 20px;
+}
+
+.infos-atc label {
+    margin-right: 50px;
+    line-height: 2em;
+}
+
+.error-card {
+    position: relative;
+}
+
+.logout {
+    font-size: 2em;
+    cursor: pointer;
+}
+
+.logout:hover {
+    color: rgb(62, 105, 146);
+}
+
+.user-infos i {
+    vertical-align: middle;
+}
+
+.user-infos>span {
+    margin: 15px;
+}
+
+.del {
+    font-size: 1.5em;
+    cursor: pointer;
+    margin: 10px;
+}
