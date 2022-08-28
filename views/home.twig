@@ -7,7 +7,7 @@
         
         <form method="post">
             <input type="text" id="new_game" name="name_game" placeholder="New game" />
-            <input type="button" name="new_game" onclick="createGame()" value="Add" />
+            <input type="button" class="btn primary" name="new_game" onclick="createGame()" value="Add" />
         </form>
 
         <div class="list">
@@ -22,6 +22,11 @@
 
     <script>
         // Need to add real time element
+        const socket = io();
+
+        socket.on('updated', (data) =>{
+            console.log('test :',data)
+        })
 
         function createGame() {
             const xhttp = new XMLHttpRequest();
@@ -34,14 +39,26 @@
         }
 
         function updateGame(event,id) {
-            const xhttp = new XMLHttpRequest();
+            /*const xhttp = new XMLHttpRequest();
             xhttp.open("POST", "/update");
             let data = {
                 id: id,
                 value: event.target.checked == true ? 1 : 0
             }
             xhttp.setRequestHeader("Content-Type", "application/json");
-            xhttp.send(JSON.stringify(data));
+            xhttp.send(JSON.stringify(data));*/
+            axios.post('/update', {
+                id: id,
+                value: event.target.checked == true ? 1 : 0
+            })
+            .then(function (response) {
+                // send a socket msg to the serv for updating everything
+                //console.log(response);
+                socket.emit('updated',true)
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
         }
 
         function deleteGame(id) {
@@ -53,5 +70,32 @@
             }
             xhttp.send(JSON.stringify(data));
         }
+
+
+        {# let socket = new WebSocket('ws://localhost:8000/', 'echo-protocol');
+
+        socket.onopen = function(e) {
+            console.log("[open] Connection established");
+            console.log("Sending to server");
+            //socket.send("My name is John");
+        };
+
+        socket.onmessage = function(event) {
+            console.log(`[message] Data received from server: ${event.data}`);
+        };
+
+        socket.onclose = function(event) {
+            if (event.wasClean) {
+                console.log(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
+            } else {
+                // e.g. server process killed or network down
+                // event.code is usually 1006 in this case
+                console.log('[close] Connection died');
+            }
+        };
+
+        socket.onerror = function(error) {
+            console.log(`[error] ${error.message}`);
+        }; #}
     </script>
 {% endblock %}
