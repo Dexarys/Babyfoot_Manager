@@ -24,5 +24,8 @@
     "license": "Beerware",
     "engines": {
         "node": "^16.0.0"
+    },
+    "devDependencies": {
+        "nodemon": "^2.0.19"
     }
 }

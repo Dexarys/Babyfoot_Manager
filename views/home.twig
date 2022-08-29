@@ -5,70 +5,148 @@
 
     <div class="content">
         
-        <form method="post">
-            <input type="text" id="new_game" name="name_game" placeholder="New game" />
-            <input type="button" class="btn primary" name="new_game" onclick="createGame()" value="Add" />
-        </form>
+        <div class="games">
+            <form method="post">
+                <input type="text" id="new_game" name="name_game" placeholder="New game" />
+                <input type="button" class="btn primary" name="new_game" onclick="createGame()" value="Add" />
+            </form>
 
-        <div class="list">
-            <ul>
-                {% for game in games %}
-                    <li><input {% if game.game_finished == 1 %} checked {% endif %} onclick="updateGame(event,{{ game.game_id }})" type="checkbox" class="updateGame {% if game.game_finished == 1 %} finished {% endif %}" value="1" />{{ game.game_name }} <button onclick="deleteGame({{ game.game_id }})">cross</button></li>
-                {% endfor %}
-            </ul>
+            <div id="list" class="border">
+                <ul>
+                    {% for game in games %}
+                        <li id="game{{ game.game_id }}"><input {% if game.game_finished == 1 %} checked {% endif %} onclick="updateGame(event)" data-id="{{ game.game_id }}" type="checkbox" class="updateGame" value="1" /><span class="{% if game.game_finished == 1 %} finished {% endif %}">{{ game.game_name }} </span><i onclick="deleteGame(event)" data-id="{{ game.game_id }}" class="material-symbols-outlined deletedGame">block</i></li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+        </div>
+
+        <div id="tchat" class="tchat border">
+            <div>
+                <input type="text" name="nickname" placeholder="Nickname" />
+            </div>
+
+            <div class="screen-tchat">
+            </div>
+
+            <div>
+                <input type="text" name="texttchat" />
+                <i onclick="sendMsg(event)" class="material-symbols-outlined">send</i>
+            </div>
         </div>
 
     </div>
 
     <script>
         // Need to add real time element
-        const socket = io();
+        const socket = io('http://localhost:8000/');
 
-        socket.on('updated', (data) =>{
-            console.log('test :',data)
+        socket.on("connect", () => {
+            console.log(socket.id); // "G5p5..."
+            socket.emit('message', 'Hello server');
+        });
+
+        socket.on("disconnect", () => {
+            socket.connect();
+        });
+
+        socket.on('created', (data) => {
+            // new element to add
+            let ul = document.getElementById('list').getElementsByTagName('ul')[0];
+            for (i = 0; i < data.length; i++) {
+                let li = document.createElement('li');
+                li.id = 'game'+data[i].game_id;
+
+                let input = document.createElement('input');
+                input.type = 'checkbox';
+                input.className = 'updateGame';
+                input.addEventListener('click',updateGame);
+                input.setAttribute('data-id',data[i].game_id);
+                input.onclick = "updateGame(event,"+data[i].game_id+")";
+                li.appendChild(input);
+
+                let span = document.createElement('span');
+                span.className = data[i].game_finished == 1 ? 'finished' : '';
+                span.textContent = data[i].game_name;
+                li.appendChild(span);
+
+                let close = document.createElement('i');
+                close.className = 'material-symbols-outlined deletedGame';
+                close.textContent = 'block';
+                close.addEventListener('click',deleteGame);
+                close.setAttribute('data-id',data[i].game_id);
+                li.appendChild(close);
+
+                ul.prepend(li);
+            }
+        })
+
+        socket.on('updated', (data) => {
+            // an element has get a modification
+            for (i = 0; i < data.length; i++) {
+                let li = document.getElementById('game'+data[i].game_id);
+                let input = li.getElementsByTagName('input')[0];
+                let checked = data[i].game_finished == 1 ? true : false;
+                input.checked = checked;
+                if (!checked) {
+                    li.getElementsByTagName('span')[0].classList.remove('finished');
+                } else {
+                    li.getElementsByTagName('span')[0].classList.add('finished');
+                }
+            }
+        })
+
+        socket.on('deleted', (data) => {
+            // an element has to be removed
+            for (i = 0; i < data.length; i++) {
+                let li = document.getElementById('game'+data[i].game_id);
+                li.remove();
+            }
         })
 
         function createGame() {
-            const xhttp = new XMLHttpRequest();
-            xhttp.open("POST", "/create");
-            xhttp.setRequestHeader("Content-Type", "application/json");
             let data = {
                 name: document.getElementById('new_game').value
             }
-            xhttp.send(JSON.stringify(data));
-        }
-
-        function updateGame(event,id) {
-            /*const xhttp = new XMLHttpRequest();
-            xhttp.open("POST", "/update");
-            let data = {
-                id: id,
-                value: event.target.checked == true ? 1 : 0
-            }
-            xhttp.setRequestHeader("Content-Type", "application/json");
-            xhttp.send(JSON.stringify(data));*/
-            axios.post('/update', {
-                id: id,
-                value: event.target.checked == true ? 1 : 0
+            axios.post('/create', {
+                name: document.getElementById('new_game').value
             })
-            .then(function (response) {
-                // send a socket msg to the serv for updating everything
-                //console.log(response);
-                socket.emit('updated',true)
+            .then((response) => {
+                // Clear the input
+                document.getElementById('new_game').value == "";
             })
-            .catch(function (error) {
+            .catch((error) => {
                 console.log(error);
             });
         }
 
-        function deleteGame(id) {
-            const xhttp = new XMLHttpRequest();
-            xhttp.open("DELETE", "/delete");
-            xhttp.setRequestHeader("Content-Type", "application/json");
-            let data = {
-                id: id
-            }
-            xhttp.send(JSON.stringify(data));
+        function updateGame(event) {
+            axios.post('/update', {
+                id: event.target.getAttribute('data-id'),
+                value: event.target.checked == true ? 1 : 0
+            })
+            .then((response) => {
+                // send a socket msg to the serv for updating everything
+                //console.log(response);
+                //socket.emit('updated',true)
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+        }
+
+        function deleteGame(event) {
+            axios.delete('/delete', {
+                data: {
+                    id: event.target.getAttribute('data-id')
+                }
+            })
+            .then((response) => {
+
+            })
+            .catch((error) => {
+                console.log(error);
+            })
         }
 
 

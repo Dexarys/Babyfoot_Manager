@@ -5,6 +5,16 @@
 .content {
     width: 60%;
     margin: auto;
+    display: flex;
+    justify-content: center;
+}
+
+.content > div {
+    margin: 20px;
+}
+
+ul {
+    list-style-type: none;  
 }
 
 .btn {
@@ -14,4 +24,52 @@
 
 .btn .primary {
     background-color: blue;
+}
+
+.finished {
+    color: rgb(124, 124, 124);
+    text-decoration: line-through;
+}
+
+.deletedGame {
+    cursor: pointer;
+    color: red;
+}
+
+.deletedGame:hover {
+    color:rgb(141, 30, 30);
+}
+
+#list li span, #list li i, #list li input {
+    vertical-align: middle;
+}
+
+.screen-tchat {
+    height: 500px;
+    width: 400px;
+    background-color: antiquewhite;
+}
+
+.border {
+    border: 1px solid black;
+    border-radius: 15px;
+    padding: 15px;
+}
+
+.tchat > div {
+    margin: 15px 0px;
+}
+
+input {
+    height: 30px;
+}
+
+#new_game {
+    margin: 10px;
+}
+
+.games {
+    width: 600px;
+    min-height: 500px;
+    max-height: 600px;
 }
