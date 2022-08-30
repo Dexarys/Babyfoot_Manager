@@ -3,7 +3,7 @@
 @media only screen and (min-device-width: 768px) and (max-device-width: 1024px) and (orientation: portrait) {}
 
 .content {
-    width: 60%;
+    min-width: 60%;
     margin: auto;
     display: flex;
     justify-content: center;
