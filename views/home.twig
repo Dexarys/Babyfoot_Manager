@@ -12,7 +12,7 @@
             </form>
 
             <div id="list" class="border">
-                <span id="number_games" class="bubble"></span>
+                <div class="bubble"><span id="number_games">{{ number[0].number_games }}</span></div>
                 <ul>
                     {% for game in games %}
                         <li id="game{{ game.game_id }}"><input {% if game.game_finished == 1 %} checked {% endif %} onclick="updateGame(event)" data-id="{{ game.game_id }}" type="checkbox" class="updateGame" value="1" /><span class="{% if game.game_finished == 1 %} finished {% endif %}">{{ game.game_name }} </span><i onclick="deleteGame(event)" data-id="{{ game.game_id }}" class="material-symbols-outlined deletedGame">block</i></li>
@@ -131,7 +131,9 @@
         })
         
         socket.on('numberGames', (data) => {
-            console.log(data)
+            console.log(data[0].count)
+            let span = document.getElementById('number_games');
+            span.textContent = data[0].count;
         })
 
         function createGame() {

@@ -51,14 +51,20 @@ app.set('views', path.join(__dirname, 'views'));
 
 app.get('/', (req, res) => {
     let $query = `SELECT * from games where status <> 0 ORDER BY created_on DESC`;
-    pg.query($query).then((value) => {
+    let $query2 = `SELECT COUNT(game_id) as number_games from games where (game_finished <> 1 OR game_finished IS null) AND status <> 0`;
+
+    Promise.all([
+        pg.query($query),
+        pg.query($query2)
+      ]).then(([value, data]) => {
         res.render('home',{
             title: 'Babyfoot Manager',
-            games: value.rows
+            games: value.rows,
+            number: data.rows
         });
-    }).catch((err) => {
-        logger.error(err);
-    });
+      }, (error) => {
+        logger.error(error);
+      });
 });
 
 app.post('/create', (req,res) => {
@@ -95,7 +101,7 @@ app.delete('/delete', (req,res) => {
 })
 
 function sendNumberOfUnfinished() {
-    let $query = `SELECT COUNT(game_id) from games where game_finished <> 1 AND status <> 0`;
+    let $query = `SELECT COUNT(game_id) from games where (game_finished <> 1  OR game_finished IS null) AND status <> 0`;
     pg.query($query).then((value) => {
         console.log(value)
         io.emit('numberGames', value.rows);
