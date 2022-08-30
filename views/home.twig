@@ -6,12 +6,13 @@
     <div class="content">
         
         <div class="games">
-            <form method="post">
+            <form id="newGameForm" method="post">
                 <input type="text" id="new_game" name="name_game" placeholder="New game" />
                 <input type="button" class="btn primary" name="new_game" onclick="createGame()" value="Add" />
             </form>
 
             <div id="list" class="border">
+                <span id="number_games" class="bubble"></span>
                 <ul>
                     {% for game in games %}
                         <li id="game{{ game.game_id }}"><input {% if game.game_finished == 1 %} checked {% endif %} onclick="updateGame(event)" data-id="{{ game.game_id }}" type="checkbox" class="updateGame" value="1" /><span class="{% if game.game_finished == 1 %} finished {% endif %}">{{ game.game_name }} </span><i onclick="deleteGame(event)" data-id="{{ game.game_id }}" class="material-symbols-outlined deletedGame">block</i></li>
@@ -23,14 +24,17 @@
 
         <div id="tchat" class="tchat border">
             <div>
-                <input type="text" name="nickname" placeholder="Nickname" />
+                <input type="text" id="nickname" name="nickname" placeholder="Nickname" />
+                <i onclick="saveNickName(event)" class="material-symbols-outlined">done</i>
             </div>
 
-            <div class="screen-tchat">
+            <div id="screen-tchat">
+                <ul>
+                </ul>
             </div>
 
             <div>
-                <input type="text" name="texttchat" />
+                <input type="text" id="texttchat" name="texttchat" placeholder="You need to used a Nickname before" disabled />
                 <i onclick="sendMsg(event)" class="material-symbols-outlined">send</i>
             </div>
         </div>
@@ -41,10 +45,32 @@
         // Need to add real time element
         const socket = io('http://localhost:8000/');
 
+        var nickname = "";
+
         socket.on("connect", () => {
             console.log(socket.id); // "G5p5..."
             socket.emit('message', 'Hello server');
         });
+
+        socket.on("tchat-message", (data) => {
+            let ul = document.getElementById('screen-tchat').getElementsByTagName('ul')[0];
+            let li = document.createElement('li');
+
+            let name = document.createElement('span');
+            // make 2 colors name - your and an other
+            name.className = 'colored';
+            name.textContent = data.nickname === nickname ? 'You : ' : data.nickname + ' : ';
+            li.appendChild(name);
+
+            let txt = document.createElement('span');
+            txt.className = 'textual';
+            txt.textContent = data.msg;
+            li.appendChild(txt);
+
+            ul.appendChild(li);
+
+            console.log(data)
+        })
 
         socket.on("disconnect", () => {
             socket.connect();
@@ -103,17 +129,18 @@
                 li.remove();
             }
         })
+        
+        socket.on('numberGames', (data) => {
+            console.log(data)
+        })
 
         function createGame() {
-            let data = {
-                name: document.getElementById('new_game').value
-            }
             axios.post('/create', {
                 name: document.getElementById('new_game').value
             })
             .then((response) => {
                 // Clear the input
-                document.getElementById('new_game').value == "";
+                document.getElementById('new_game').value = "";
             })
             .catch((error) => {
                 console.log(error);
@@ -149,31 +176,26 @@
             })
         }
 
+        function saveNickName(event) {
+            // get and save Nickname only on this client session
+            nickname = document.getElementById('nickname').value;
+            document.getElementById('nickname').setAttribute('disabled',true);
+            document.getElementById('texttchat').disabled = false;
+            document.getElementById('texttchat').placeholder = 'Enter your message..';
+        }
 
-        {# let socket = new WebSocket('ws://localhost:8000/', 'echo-protocol');
-
-        socket.onopen = function(e) {
-            console.log("[open] Connection established");
-            console.log("Sending to server");
-            //socket.send("My name is John");
-        };
-
-        socket.onmessage = function(event) {
-            console.log(`[message] Data received from server: ${event.data}`);
-        };
-
-        socket.onclose = function(event) {
-            if (event.wasClean) {
-                console.log(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
-            } else {
-                // e.g. server process killed or network down
-                // event.code is usually 1006 in this case
-                console.log('[close] Connection died');
+        function sendMsg(event) {
+            // Send emit message with the user
+            event.preventDefault();
+            let message = document.getElementById('texttchat').value;
+            if (message.trim().length !== 0) {
+                let data = {
+                    msg: message,
+                    nickname: nickname
+                }
+                socket.emit('tchat-message', data)
             }
-        };
-
-        socket.onerror = function(error) {
-            console.log(`[error] ${error.message}`);
-        }; #}
+            document.getElementById('texttchat').value = ""
+        }
     </script>
 {% endblock %}

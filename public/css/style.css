@@ -14,7 +14,9 @@
 }
 
 ul {
-    list-style-type: none;  
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
 }
 
 .btn {
@@ -44,7 +46,7 @@ ul {
     vertical-align: middle;
 }
 
-.screen-tchat {
+#screen-tchat {
     height: 500px;
     width: 400px;
     background-color: antiquewhite;
@@ -72,4 +74,23 @@ input {
     width: 600px;
     min-height: 500px;
     max-height: 600px;
+}
+
+.tchat input, .tchat i {
+    vertical-align: middle;
+}
+
+.tchat i {
+    cursor: pointer;
+}
+.tchat i:hover {
+    color:rgb(141, 30, 30);
+}
+
+#texttchat {
+    width: 90%;
+}
+
+.tchat ul {
+    width: 100%;
 }

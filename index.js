@@ -22,6 +22,11 @@ io.on('connection', (socket) => {
         logger.info('A user has logged in');
     })
 
+
+    socket.on('tchat-message', (data) => {
+        io.emit('tchat-message', data);
+    })
+
     // If i wanted to used socket only
     // socket.on('created', (data) => {
     //     console.log(data);
@@ -31,12 +36,10 @@ io.on('connection', (socket) => {
     //         // sendEvent();
     //         res.status(200).json(true);
     //     }).catch((err) => {
-    //         this.logger.error(err);
+    //         logger.error(err);
     //     });
     // })
 })
-
-// Raising ping event
 
 logger.info('Initialisation of the application');
 
@@ -54,49 +57,50 @@ app.get('/', (req, res) => {
             games: value.rows
         });
     }).catch((err) => {
-        this.logger.error(err);
+        logger.error(err);
     });
 });
 
 app.post('/create', (req,res) => {
     let $query = `INSERT INTO games(game_name) VALUES ($1) RETURNING game_id, game_name, game_finished`;
     let id = pg.query($query, [req.body.name]).then((value) => {
+        sendNumberOfUnfinished();
         io.emit('created', value.rows);
         res.status(200).json(true);
     }).catch((err) => {
-        this.logger.error(err);
+        logger.error(err);
     });
 })
 
 app.post('/update', (req,res) => {
     let $query = `UPDATE games SET game_finished = $2, updated_on = NOW() WHERE game_id = $1 RETURNING game_id, game_finished`;
     let id = pg.query($query, [req.body.id, req.body.value]).then((value) => {
+        sendNumberOfUnfinished();
         io.emit('updated', value.rows);
         res.status(200).json(true);
     }).catch((err) => {
-        this.logger.error(err);
+        logger.error(err);
     });
 })
 
 app.delete('/delete', (req,res) => {
     let $query = `UPDATE games SET status = 0, deleted_on = NOW() WHERE game_id = $1 RETURNING game_id`;
     let id = pg.query($query, [req.body.id]).then((value) => {
-        io.emit('deleted', value.rows)
+        sendNumberOfUnfinished();
+        io.emit('deleted', value.rows);
         res.status(200).json(true);
     }).catch((err) => {
-        this.logger.error(err);
+        logger.error(err);
     });
 })
 
-function sendEvent(ws) {
-    let $query = `SELECT * from games where status <> 0 ORDER BY created_on DESC`;
+function sendNumberOfUnfinished() {
+    let $query = `SELECT COUNT(game_id) from games where game_finished <> 1 AND status <> 0`;
     pg.query($query).then((value) => {
-        // wss.broadcast = (data) => {
-        io.emit('test','ok')
-        // };
-        // wss.send('list',value)
+        console.log(value)
+        io.emit('numberGames', value.rows);
     }).catch((err) => {
-        this.logger.error(err);
+        logger.error(err);
     });
 }
 
